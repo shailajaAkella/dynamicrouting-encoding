@@ -26,7 +26,7 @@ This will give you a copy of the capsule defined in this repo, which you can edi
 ### For more-permanent, collaborative capsule development:
 Create a new repo from this template, which can serve as the remote for one or more capsules. 
 
-This will allow you to sync changes between github/codeocean, and make changes outside of codeocean:
+This will allow you to sync changes between github/codeocean (including changes to the environment):
 - open this repository on github [here](https://github.com/AllenNeuralDynamics/dynamicrouting-processing-template)
 - hit the big green button to `Use this template`: a new repo will be created after you decide its name
 - follow the cloning instructions as for [`throwaway analyses`](#for-throwaway-analyses), but use `"Capsule" > "Clone from Git"` and supply the link to your new repo
