@@ -10,7 +10,7 @@ This template sets up a starting point for processing NWB files attached in a Dy
 ## for throwaway analyses
 get up and running quickly by *cloning this repo* in codeocean:
 - open codeocean in a new tab [here](https://codeocean.allenneuraldynamics.org/)
-- hit the `+` icon (top left) and select `"New Capsule" > "Clone from Git"` and paste the URL for this repo: `https://github.com/AllenNeuralDynamics/dynamicrouting-processing-template`
+- hit the `+` icon (top left) and select `"Capsule" > "Clone from Git"` and paste the URL for this repo: `https://github.com/AllenNeuralDynamics/dynamicrouting-processing-template`
 - the capsule should open at this readme
 
 ## for more-permanent, collaborative capsule development
