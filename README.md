@@ -16,7 +16,7 @@ get up and running quickly by *cloning this repo* in codeocean:
 ## for more-permanent, collaborative capsule development
 *create a new repo*, which can serve as the remote for one or more capsules:
 - open this repository on github [here](https://github.com/AllenNeuralDynamics/dynamicrouting-processing-template)
-- hit the big green button to "`Use this template`": a new repo will be created after you decide its name
+- hit the big green button to `Use this template`: a new repo will be created after you decide its name
 - follow the cloning instructions as per [`# for testing`](#for-testing), but use `"Capsule" > "Clone from Git"` and supply the link to your new repo
 - the capsule can now pull changes from github, so you can add or edit your files anywhere, push to github, then pull in codeocean
 - to push changes *from* codeocean to github:
