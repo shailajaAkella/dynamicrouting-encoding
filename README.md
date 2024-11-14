@@ -26,6 +26,6 @@ get up and running quickly by *cloning this repo* in codeocean:
 
 ## Adding your processing code
 `run_script.py` is a skeleton script for processing, which just needs two modifications:
-- the body of `process_session()` should be updated where indicated to add processing code that operates on a single NWB files
+- the body of `process_session()` should be updated where indicated to add processing code that operates on a single NWB file
 - the fields in the `Params` dataclass need to be updated to specify any parameters used in `process_session()`
   - in addition, if you need to pass parameters via the App Builder interface, add them as named parameters there with exactly the same variable name as in `Params` (they will be picked up automatically in `run_script.py`)
