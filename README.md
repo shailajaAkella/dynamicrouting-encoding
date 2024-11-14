@@ -1,21 +1,28 @@
 # dynamicrouting-processing-template
 
+This template sets up a starting point for processing NWB files attached in a DynamicRouting "datacube" data asset.
+
+This is a template in two ways:
+- a github repository template (from which other repos can be created in github)
+- a capsule template (from which capsules can be cloned/copied in codeocean)
+
 ## Using this template
-Developing a capsule in codoecean is a lot like developing in a local git repository: 
+Developing a capsule in codeocean is a lot like developing in a local git repository: 
 - you can clone from a remote (github) to get started
 - changes are tracked as commits, with commit messages
 - changes can be pushed or pulled from a remote
 
-This template sets up a starting point for processing NWB files attached in a DynamicRouting "datacube" data asset.
+Like local git, version-control is opt-in and requires some effort.
 
 ### For throwaway analyses:
-get up and running quickly by *cloning this repo* in codeocean:
+Get up and running quickly by *copying* from this repository in codeocean.
+This will give you a copy of the capsule defined in this repo, which you can edit and use. However it won't be connected to a remote (github), so all work must be done in codeocean itself.
 - open codeocean in a new tab [here](https://codeocean.allenneuraldynamics.org/)
 - hit the `+` icon (top left) and select `"Capsule" > "Copy from public Git"` and paste the URL for this repo: `https://github.com/AllenNeuralDynamics/dynamicrouting-processing-template`
 - the capsule should open at this readme
 
 ### For more-permanent, collaborative capsule development:
-*create a new repo*, which can serve as the remote for one or more capsules:
+Create a new repo from this template, which can serve as the remote for one or more capsules. This will allow you to sync changes between github/codeocean, and make changes outside of codeocean:
 - open this repository on github [here](https://github.com/AllenNeuralDynamics/dynamicrouting-processing-template)
 - hit the big green button to `Use this template`: a new repo will be created after you decide its name
 - follow the cloning instructions as for [`throwaway analyses`](#for-throwaway-analyses), but use `"Capsule" > "Clone from Git"` and supply the link to your new repo
@@ -24,8 +31,8 @@ get up and running quickly by *cloning this repo* in codeocean:
     - generate a personal access token for your account in github
     - add it to your account in codeocean
 
-## Adding your processing code
-`run_script.py` is a skeleton script for processing, which just needs two modifications:
+## Adding your processing code to your copy of the capsule
+`run_script.py` is a skeleton script for processing with utility functions and advice. It just needs two modifications:
 - the body of `process_session()` should be updated where indicated to add processing code that operates on a single NWB file
 - the fields in the `Params` dataclass need to be updated to specify any parameters used in `process_session()`
   - in addition, if you need to pass parameters via the App Builder interface, add them as named parameters there with exactly the same variable name as in `Params` (they will be picked up automatically in `run_script.py`)
