@@ -2,11 +2,12 @@
 
 This template sets up a starting point for processing NWB files attached in a DynamicRouting "datacube" data asset.
 
-This is a template in two ways:
-- a github repository template (from which other repos can be created in github)
-- a capsule template (from which capsules can be cloned/copied in codeocean)
-
 ## Using this template
+This is a template in two ways:
+- a github repository template (from which new repos can be created in github)
+- a capsule template (from which new capsules can be created in codeocean)
+It can be used in either way, described below.
+
 Developing a capsule in codeocean is a lot like developing in a local git repository: 
 - you can clone from a remote (github) to get started
 - changes are tracked as commits, with commit messages
@@ -15,14 +16,17 @@ Developing a capsule in codeocean is a lot like developing in a local git reposi
 Like local git, version-control is opt-in and requires some effort.
 
 ### For throwaway analyses:
-Get up and running quickly by *copying* from this repository in codeocean.
+Get up and running quickly by creating a capsule from this repository in codeocean.
+
 This will give you a copy of the capsule defined in this repo, which you can edit and use. However it won't be connected to a remote (github), so all work must be done in codeocean itself.
 - open codeocean in a new tab [here](https://codeocean.allenneuraldynamics.org/)
 - hit the `+` icon (top left) and select `"Capsule" > "Copy from public Git"` and paste the URL for this repo: `https://github.com/AllenNeuralDynamics/dynamicrouting-processing-template`
 - the capsule should open at this readme
 
 ### For more-permanent, collaborative capsule development:
-Create a new repo from this template, which can serve as the remote for one or more capsules. This will allow you to sync changes between github/codeocean, and make changes outside of codeocean:
+Create a new repo from this template, which can serve as the remote for one or more capsules. 
+
+This will allow you to sync changes between github/codeocean, and make changes outside of codeocean:
 - open this repository on github [here](https://github.com/AllenNeuralDynamics/dynamicrouting-processing-template)
 - hit the big green button to `Use this template`: a new repo will be created after you decide its name
 - follow the cloning instructions as for [`throwaway analyses`](#for-throwaway-analyses), but use `"Capsule" > "Clone from Git"` and supply the link to your new repo
