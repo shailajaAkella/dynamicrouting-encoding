@@ -4,8 +4,8 @@ import dataclasses
 import json
 import functools
 import logging
-import os
 import pathlib
+import uuid
 
 # 3rd-party imports necessary for processing ----------------------- #
 import numpy as np
@@ -103,7 +103,7 @@ def ensure_nonempty_results_dir() -> None:
     results = pathlib.Path("/results")
     results.mkdir(exist_ok=True)
     if not list(results.iterdir()):
-        (results / os.getenv('CO_COMPUTATION_ID')).touch()
+        (results / uuid.uuid4().hex).touch()
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
