@@ -96,6 +96,13 @@ def get_nwb(session_id: str, raise_on_missing: bool = True, raise_on_bad_file: b
             raise RecursionError(msg)
     else:
         return nwb
+        
+def ensure_nonempty_results_dir() -> None:
+    # pipeline can crash if a results folder is expected and not found, and requires creating manually:
+    results = pathlib.Path("/results")
+    results.mkdir(exist_ok=True)
+    if not list(results.iterdir()):
+        (results / 'output').touch()
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
@@ -211,8 +218,7 @@ def main():
         if args.test:
             logger.info("Test mode: exiting after first session")
             break
+    ensure_nonempty_results_dir()
 
 if __name__ == "__main__":
-    # pipeline can crash if a results folder is expected and not found, and requires creating manually:
-    pathlib.Path("/results").mkdir(exist_ok=True)
     main()
