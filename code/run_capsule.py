@@ -191,7 +191,9 @@ def main():
             exit()
         logger.info(f"Using single session_id {args.session_id} provided via command line argument")
         session_ids = [args.session_id]
-    
+    else:
+        logger.info(f"Using list of {len(session_ids)} session_ids")
+
     # run processing function for each session, with test mode implemented:
     for session_id in session_ids:
         process_session(session_id, params=params, test=args.test)
