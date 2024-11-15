@@ -137,7 +137,7 @@ def process_session(session_id: str, params: "Params", test: int = 0) -> None:
     #   /results/<sessionId>.suffix
     logger.info(f"Writing results for {session_id}")
     np.savez(f'/results/{session_id}.npz', **results)
-    params.write_json(f'/results/{session_id}_params.json')
+    params.write_json(f'/results/{session_id}.json')
 
 # define run params here ------------------------------------------- #
 
