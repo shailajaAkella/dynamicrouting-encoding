@@ -205,6 +205,9 @@ def main():
     else:
         logger.info(f"Using list of {len(session_ids)} session_ids")
 
+    # pipeline can crash if a results folder is expected and not found
+    pathlib.Path("/results").mkdir(exist_ok=True)
+
     # run processing function for each session, with test mode implemented:
     for session_id in session_ids:
         process_session(session_id, params=params, test=args.test)
