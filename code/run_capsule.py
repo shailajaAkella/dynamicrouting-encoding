@@ -44,7 +44,17 @@ def parse_args() -> argparse.Namespace:
     return args
 
 def get_datacube_dir() -> pathlib.Path:
-    path = next(get_data_root().glob('dynamicrouting_datacube_v*'))
+    for p in get_data_root().iterdir():
+        if p.is_dir() and p.name.startswith('dynamicrouting_datacube'):
+            path = p
+            break
+    else:
+        for p in get_data_root().iterdir():
+            if any(pattern in p.name for pattern in ('session_table', 'nwb', 'consolidated', ))
+                path = get_data_root()
+                break
+        else:
+            raise FileNotFoundError(f"Cannot determine datacube dir: {list(get_data_root().iterdir())=}")
     logger.info(f"Using files in {path}")
     return path
 
