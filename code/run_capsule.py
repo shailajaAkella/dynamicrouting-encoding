@@ -4,6 +4,7 @@ import dataclasses
 import json
 import functools
 import logging
+import os
 import pathlib
 
 # 3rd-party imports necessary for processing ----------------------- #
@@ -96,13 +97,13 @@ def get_nwb(session_id: str, raise_on_missing: bool = True, raise_on_bad_file: b
             raise RecursionError(msg)
     else:
         return nwb
-        
+
 def ensure_nonempty_results_dir() -> None:
     # pipeline can crash if a results folder is expected and not found, and requires creating manually:
     results = pathlib.Path("/results")
     results.mkdir(exist_ok=True)
     if not list(results.iterdir()):
-        (results / 'output').touch()
+        (results / os.getenv('CO_COMPUTATION_ID')).touch()
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
