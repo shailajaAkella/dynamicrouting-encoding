@@ -43,6 +43,7 @@ def parse_args() -> argparse.Namespace:
     logger.info(f"{args=}")
     return args
 
+@functools.cache
 def get_datacube_dir() -> pathlib.Path:
     for p in get_data_root().iterdir():
         if p.is_dir() and p.name.startswith('dynamicrouting_datacube'):
@@ -50,7 +51,7 @@ def get_datacube_dir() -> pathlib.Path:
             break
     else:
         for p in get_data_root().iterdir():
-            if any(pattern in p.name for pattern in ('session_table', 'nwb', 'consolidated', ))
+            if any(pattern in p.name for pattern in ('session_table', 'nwb', 'consolidated', ):
                 path = get_data_root()
                 break
         else:
