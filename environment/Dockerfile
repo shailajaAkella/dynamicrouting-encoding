@@ -1,4 +1,4 @@
-# hash:sha256:1784aa4b496aeeea5ddb77f818aa89b92d00fb1957d4eba3081a0918e8785e7b
+# hash:sha256:966bfe948768ae90e5761510c8115681d645067539ba4ac5baabea05efd1a3b7
 ARG REGISTRY_HOST
 FROM $REGISTRY_HOST/codeocean/mambaforge3:23.1.0-4-python3.10.12-ubuntu22.04
 
@@ -18,4 +18,4 @@ RUN pip3 install -U --no-cache-dir \
     pandas[all]==2.2.3 \
     pynwb==2.8.2 \
     scikit-learn==1.5.2 \
-    zarr==2.18.3
+    zarr==2.18.0
