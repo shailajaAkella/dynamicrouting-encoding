@@ -49,7 +49,7 @@ def parse_args() -> argparse.Namespace:
         else:
             type_ = field.type
         parser.add_argument(f'--{field.name}', type=type_)
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
     logger.info(f"{args=}")
     return args
 
