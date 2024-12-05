@@ -195,10 +195,11 @@ class Params:
         """json string of field name: value pairs, excluding values from property getters (which may be large)"""
         return json.dumps(dataclasses.asdict(self), **dumps_kwargs)
 
-    def write_json(self, path: str = '/results/params.json') -> str:
+    def write_json(self, path: str | upath.UPath = '/results/params.json') -> None:
+        path = upath.UPath(path)
         logger.info(f"Writing params to {path}")
-        pathlib.Path(path).write_text(self.to_json(indent=2))
-
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(self.to_json(indent=2))
 
 # ------------------------------------------------------------------ #
 
