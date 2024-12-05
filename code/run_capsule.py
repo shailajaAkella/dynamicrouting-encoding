@@ -37,9 +37,17 @@ logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR) # suppress 
 def parse_args() -> argparse.Namespace:
     argParser = argparse.ArgumentParser()
     argParser.add_argument('--session_id', type=str, default=None)
+    argParser.add_argument('--logging_level', type=str, default='INFO')
     argParser.add_argument('--test', type=int, default=0)
     for field in dataclasses.fields(Params):
-        argParser.add_argument(f'--{field.name}', type=field.type, default=None)
+        if field.name in ('session_id', 'test'):
+            continue
+        logger.debug(f"adding argparse argument {field}")
+        if isinstance(field.type, str):
+            type_ = eval(field.type)
+        else:
+            type_ = field.type
+        argParser.add_argument(f'--{field.name}', type=type_, default=None)
     args = argParser.parse_args()
     logger.info(f"{args=}")
     return args
@@ -166,7 +174,8 @@ class Params:
     binSize: float = 1
     nShuffles: int = 100
     binStart: int = -windowDur
-    
+    n_units: list = dataclasses.field(default_factory=lambda: [5, 10, 20, 40, 60, 'all'])
+
     @property
     def bins(self) -> npt.NDArray[np.float64]:
         return np.arange(self.binStart, self.windowDur+self.binSize, self.binSize)
@@ -175,7 +184,12 @@ class Params:
     def nBins(self) -> int:
         return self.bins.size - 1
     
+    def to_dict(self) -> dict[str, Any]:
+        """dict of field name: value pairs, including values from property getters"""
+        return dataclasses.asdict(self) | {k: getattr(self, k) for k in dir(self.__class__) if isinstance(getattr(self.__class__, k), property)}
+
     def to_json(self, **dumps_kwargs) -> str:
+        """json string of field name: value pairs, excluding values from property getters (which may be large)"""
         return json.dumps(dataclasses.asdict(self), **dumps_kwargs)
 
     def write_json(self, path: str = '/results/params.json') -> str:
@@ -189,14 +203,14 @@ class Params:
 def main():
     # get arguments passed from command line (or "AppBuilder" interface):
     args = parse_args()
-    
+    logger.setLevel(args.logging_level)
+
     # if any of the parameters required for processing are passed as command line arguments, we can
     # get a new params object with these values in place of the defaults:
-    p = {}
+    params = {}
     for field in dataclasses.fields(Params):
         if (val := getattr(args, field.name, None)) is not None:
-            p[field.name] = val
-    params = Params(**p)
+            params[field.name] = val
     
     # if session_id is passed as a command line argument, we will only process that session,
     # otherwise we process all session IDs that match filtering criteria:    
@@ -215,7 +229,7 @@ def main():
 
     # run processing function for each session, with test mode implemented:
     for session_id in session_ids:
-        process_session(session_id, params=params, test=args.test)
+        process_session(session_id, params=Params(**params), test=args.test)
         if args.test:
             logger.info("Test mode: exiting after first session")
             break

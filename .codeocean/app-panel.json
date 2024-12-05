@@ -11,6 +11,15 @@
 			"value_type": "string"
 		},
 		{
+			"id": "HzuW2S8dqcVV1ML7",
+			"name": "logging_level",
+			"param_name": "logging_level",
+			"description": "DEBUG, INFO, WARNING, ERROR",
+			"type": "text",
+			"value_type": "string",
+			"default_value": "INFO"
+		},
+		{
 			"id": "CKVquiTjW2bADhJk",
 			"name": "test",
 			"param_name": "test",
