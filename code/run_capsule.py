@@ -82,17 +82,26 @@ def get_data_root(as_str: bool = False) -> pathlib.Path:
 def get_nwb_paths() -> tuple[pathlib.Path, ...]:
     return tuple(get_data_root().rglob('*.nwb'))
     
-
-def get_nwb(session_id: str, raise_on_missing: bool = True, raise_on_bad_file: bool = True) -> pynwb.NWBFile:
-    try:
-        nwb_path = next(p for p in get_nwb_paths() if p.stem == session_id)
-    except StopIteration:
-        msg = f"Could not find NWB file for {session_id!r}"
-        if not raise_on_missing:
-            logger.error(msg)
-            return
+def get_nwb(session_id_or_path: str | pathlib.Path, raise_on_missing: bool = True, raise_on_bad_file: bool = True) -> pynwb.NWBFile:
+    if isinstance(session_id_or_path, (pathlib.Path, upath.UPath)):
+        nwb_path = session_id_or_path
+    else:
+        if not isinstance(session_id_or_path, str):
+            raise TypeError(f"Input should be a session ID (str) or path to an NWB file (str/Path), got: {session_id_or_path!r}")
+        if pathlib.Path(session_id_or_path).exists():
+            nwb_path = session_id_or_path
+        elif session_id_or_path.endswith(".nwb") and any(p.name == session_id_or_path for p in get_nwb_paths()):
+            nwb_path = next(p for p in get_nwb_paths() if p.name == session_id_or_path)
         else:
-            raise FileNotFoundError(f"{msg}. Available files: {[p.name for p in get_nwb_paths()]}") from None
+            try:
+                nwb_path = next(p for p in get_nwb_paths() if p.stem == session_id_or_path)
+            except StopIteration:
+                msg = f"Could not find NWB file for {session_id_or_path!r}"
+                if not raise_on_missing:
+                    logger.error(msg)
+                    return
+                else:
+                    raise FileNotFoundError(f"{msg}. Available files: {[p.name for p in get_nwb_paths()]}") from None
     logger.info(f"Reading {nwb_path}")
     try:
         nwb = pynwb.NWBHDF5IO(nwb_path).read()
@@ -105,13 +114,6 @@ def get_nwb(session_id: str, raise_on_missing: bool = True, raise_on_bad_file: b
             raise RecursionError(msg)
     else:
         return nwb
-
-def ensure_nonempty_results_dir() -> None:
-    # pipeline can crash if a results folder is expected and not found, and requires creating manually:
-    results = pathlib.Path("/results")
-    results.mkdir(exist_ok=True)
-    if not list(results.iterdir()):
-        (results / uuid.uuid4().hex).touch()
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
