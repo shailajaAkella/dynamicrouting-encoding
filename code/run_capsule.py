@@ -22,7 +22,7 @@ import zarr
 # use `logger.info(msg)` instead of `print(msg)` so we get timestamps and origin of log messages
 logging.basicConfig(
     level=logging.INFO, 
-    format="%(asctime)s | %(name)s.%(funcName)s | %(levelname)s | %(message)s", 
+    format="%(asctime)s | %(levelname)s | %(name)s.%(funcName)s | %(message)s", 
     datefmt="%Y-%d-%m %H:%M:%S",
     )
 logger = logging.getLogger(__name__)
