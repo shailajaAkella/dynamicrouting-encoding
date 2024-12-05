@@ -35,20 +35,21 @@ logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR) # suppress 
 # utility functions ------------------------------------------------ #
 
 def parse_args() -> argparse.Namespace:
-    argParser = argparse.ArgumentParser()
-    argParser.add_argument('--session_id', type=str, default=None)
-    argParser.add_argument('--logging_level', type=str, default='INFO')
-    argParser.add_argument('--test', type=int, default=0)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--session_id', type=str, default=None)
+    parser.add_argument('--logging_level', type=str, default='INFO')
+    parser.add_argument('--test', type=int, default=0)
     for field in dataclasses.fields(Params):
-        if field.name in ('session_id', 'test'):
+        if field.name in [getattr(action, 'dest') for action in parser._actions]:
+            # already added field above
             continue
-        logger.debug(f"adding argparse argument {field}")
+        logger.debug(f"adding argparse argument {field}")  
         if isinstance(field.type, str):
             type_ = eval(field.type)
         else:
             type_ = field.type
-        argParser.add_argument(f'--{field.name}', type=type_, default=None)
-    args = argParser.parse_args()
+        parser.add_argument(f'--{field.name}', type=type_)
+    args = parser.parse_args()
     logger.info(f"{args=}")
     return args
 
