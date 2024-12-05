@@ -5,7 +5,7 @@ set -ex
 # --------------------------------------------------------------------------------
 if [[ "$@" =~ "--update_packages_from_source=1" ]]; then
 echo "Updating package(s) from source"
-update pip to ensure we can install a package from pyproject.toml 
+# update pip to ensure we can install a package from pyproject.toml 
 export PIP_ROOT_USER_ACTION=ignore
 python -m pip install -U pip -q
 
