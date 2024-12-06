@@ -38,6 +38,15 @@
 			"value_type": "integer",
 			"default_value": "0",
 			"maximum": 1
+		},
+		{
+			"id": "At3zc84Aj5tQRaAC",
+			"name": "override_params_json",
+			"param_name": "override_params_json",
+			"description": "A json string of parameters to pass to Params class. Keys must be fields on Params class. Overrides values specified individually in App Builder",
+			"type": "text",
+			"value_type": "string",
+			"default_value": "{}"
 		}
 	]
 }

@@ -30,8 +30,16 @@
 					"version": "2.8.2"
 				},
 				{
+					"name": "s3fs",
+					"version": "2024.10.0"
+				},
+				{
 					"name": "scikit-learn",
 					"version": "1.5.2"
+				},
+				{
+					"name": "universal-pathlib",
+					"version": "0.1.4"
 				},
 				{
 					"name": "zarr",

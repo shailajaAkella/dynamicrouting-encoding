@@ -5,7 +5,11 @@ import json
 import functools
 import logging
 import pathlib
+import time
+import types
+import typing
 import uuid
+from typing import Any, Literal
 
 # 3rd-party imports necessary for processing ----------------------- #
 import numpy as np
@@ -15,6 +19,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import sklearn
 import pynwb
+import upath
 import zarr
 
 
@@ -39,17 +44,32 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--session_id', type=str, default=None)
     parser.add_argument('--logging_level', type=str, default='INFO')
     parser.add_argument('--test', type=int, default=0)
+    parser.add_argument('--override_params_json', type=str, default="{}")
     for field in dataclasses.fields(Params):
+        if field.name == 'decoder_type':
+            print(field)
+            print(type(field.type))
         if field.name in [getattr(action, 'dest') for action in parser._actions]:
             # already added field above
             continue
-        logger.debug(f"adding argparse argument {field}")  
+        logger.debug(f"adding argparse argument {field}")
+        kwargs = {}
         if isinstance(field.type, str):
-            type_ = eval(field.type)
+            kwargs = {'type': eval(field.type)}
         else:
-            type_ = field.type
-        parser.add_argument(f'--{field.name}', type=type_)
+            kwargs = {'type': field.type}
+        if kwargs['type'] in (list, tuple):
+            logger.debug(f"Cannot correctly parse list-type arguments from App Builder: skipping {field.name}")
+        if isinstance(field.type, str) and field.type.startswith('Literal'):
+            kwargs['type'] = str
+        if isinstance(kwargs['type'], (types.UnionType, typing._UnionGenericAlias)):
+            kwargs['type'] = typing.get_args(kwargs['type'])[0]
+            logger.info(f"setting argparse type for union type {field.name!r} ({field.type}) as first component {kwargs['type']!r}")
+        parser.add_argument(f'--{field.name}', **kwargs)
     args = parser.parse_known_args()[0]
+    list_args = [k for k,v in vars(args).items() if type(v) in (list, tuple)]
+    if list_args:
+        raise NotImplementedError(f"Cannot correctly parse list-type arguments from App Builder: remove {list_args} parameter and provide values via `override_params_json` instead")
     logger.info(f"{args=}")
     return args
 
@@ -115,6 +135,13 @@ def get_nwb(session_id_or_path: str | pathlib.Path, raise_on_missing: bool = Tru
             raise RecursionError(msg)
     else:
         return nwb
+        
+def ensure_nonempty_results_dir() -> None:
+    # pipeline can crash if a results folder is expected and not found, and requires creating manually:
+    results = pathlib.Path("/results")
+    results.mkdir(exist_ok=True)
+    if not list(results.iterdir()):
+        (results / uuid.uuid4().hex).touch()
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
@@ -175,9 +202,10 @@ class Params:
     unitSampleSize: int = 20
     windowDur: float = 1
     binSize: float = 1
-    nShuffles: int = 100
+    nShuffles: int | str = 100
     binStart: int = -windowDur
     n_units: list = dataclasses.field(default_factory=lambda: [5, 10, 20, 40, 60, 'all'])
+    decoder_type: str | Literal['linearSVC', 'LDA', 'RandomForest', 'LogisticRegression'] = 'LogisticRegression'
 
     @property
     def bins(self) -> npt.NDArray[np.float64]:
@@ -205,17 +233,27 @@ class Params:
 
 
 def main():
+    t0 = time.time()
+
     # get arguments passed from command line (or "AppBuilder" interface):
     args = parse_args()
     logger.setLevel(args.logging_level)
 
     # if any of the parameters required for processing are passed as command line arguments, we can
     # get a new params object with these values in place of the defaults:
+
     params = {}
     for field in dataclasses.fields(Params):
         if (val := getattr(args, field.name, None)) is not None:
             params[field.name] = val
     
+    override_params = json.loads(args.override_params_json)
+    if override_params:
+        for k, v in override_params.items():
+            if k in params:
+                logger.info(f"Overriding value of {k!r} from command line arg with value specified in `override_params_json`")
+            params[k] = v
+            
     # if session_id is passed as a command line argument, we will only process that session,
     # otherwise we process all session IDs that match filtering criteria:    
     session_table = pd.read_parquet(get_datacube_dir() / 'session_table.parquet')
@@ -238,6 +276,7 @@ def main():
             logger.info("Test mode: exiting after first session")
             break
     ensure_nonempty_results_dir()
+    logger.info(f"Time elapsed: {time.time() - t0:.2f} s")
 
 if __name__ == "__main__":
     main()
