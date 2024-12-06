@@ -44,6 +44,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--session_id', type=str, default=None)
     parser.add_argument('--logging_level', type=str, default='INFO')
     parser.add_argument('--test', type=int, default=0)
+    parser.add_argument('--update_packages_from_source', type=int, default=1)
     parser.add_argument('--override_params_json', type=str, default="{}")
     for field in dataclasses.fields(Params):
         if field.name == 'decoder_type':
@@ -66,7 +67,7 @@ def parse_args() -> argparse.Namespace:
             kwargs['type'] = typing.get_args(kwargs['type'])[0]
             logger.info(f"setting argparse type for union type {field.name!r} ({field.type}) as first component {kwargs['type']!r}")
         parser.add_argument(f'--{field.name}', **kwargs)
-    args = parser.parse_known_args()[0]
+    args = parser.parse_args()
     list_args = [k for k,v in vars(args).items() if type(v) in (list, tuple)]
     if list_args:
         raise NotImplementedError(f"Cannot correctly parse list-type arguments from App Builder: remove {list_args} parameter and provide values via `override_params_json` instead")
