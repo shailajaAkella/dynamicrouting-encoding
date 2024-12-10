@@ -22,8 +22,16 @@
 					"version": "3.9.2"
 				},
 				{
+					"name": "numba",
+					"version": "0.60.0"
+				},
+				{
 					"name": "pandas[all]",
 					"version": "2.2.3"
+				},
+				{
+					"name": "polars",
+					"version": "1.17.1"
 				},
 				{
 					"name": "pynwb",
