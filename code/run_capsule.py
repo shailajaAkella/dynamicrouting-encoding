@@ -22,6 +22,7 @@ import pynwb
 import upath
 import zarr
 
+import utils
 
 # logging configuration -------------------------------------------- #
 # use `logger.info(msg)` instead of `print(msg)` so we get timestamps and origin of log messages
@@ -38,7 +39,6 @@ logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR) # suppress 
 
 
 # utility functions ------------------------------------------------ #
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--session_id', type=str, default=None)
@@ -71,83 +71,8 @@ def parse_args() -> argparse.Namespace:
     logger.info(f"{args=}")
     return args
 
-def get_df(component: str) -> pd.DataFrame:
-    path = get_datacube_dir() / 'consolidated' / f'{component}.parquet'
-    return pd.read_parquet(path)
-
-@functools.cache
-def get_datacube_dir() -> pathlib.Path:
-    for p in get_data_root().iterdir():
-        if p.is_dir() and p.name.startswith('dynamicrouting_datacube'):
-            path = p
-            break
-    else:
-        for p in get_data_root().iterdir():
-            if any(pattern in p.name for pattern in ('session_table', 'nwb', 'consolidated', )):
-                path = get_data_root()
-                break
-        else:
-            raise FileNotFoundError(f"Cannot determine datacube dir: {list(get_data_root().iterdir())=}")
-    logger.info(f"Using files in {path}")
-    return path
-
-@functools.cache
-def get_data_root(as_str: bool = False) -> pathlib.Path:
-    expected_paths = ('/data', '/tmp/data', )
-    for p in expected_paths:
-        if (data_root := pathlib.Path(p)).exists():
-            logger.info(f"Using {data_root=}")
-        return data_root.as_posix() if as_str else data_root
-    else:
-        raise FileNotFoundError(f"data dir not present at any of {expected_paths=}")
-
-@functools.cache
-def get_nwb_paths() -> tuple[pathlib.Path, ...]:
-    return tuple(get_data_root().rglob('*.nwb'))
-    
-def get_nwb(session_id_or_path: str | pathlib.Path, raise_on_missing: bool = True, raise_on_bad_file: bool = True) -> pynwb.NWBFile:
-    if isinstance(session_id_or_path, (pathlib.Path, upath.UPath)):
-        nwb_path = session_id_or_path
-    else:
-        if not isinstance(session_id_or_path, str):
-            raise TypeError(f"Input should be a session ID (str) or path to an NWB file (str/Path), got: {session_id_or_path!r}")
-        if pathlib.Path(session_id_or_path).exists():
-            nwb_path = session_id_or_path
-        elif session_id_or_path.endswith(".nwb") and any(p.name == session_id_or_path for p in get_nwb_paths()):
-            nwb_path = next(p for p in get_nwb_paths() if p.name == session_id_or_path)
-        else:
-            try:
-                nwb_path = next(p for p in get_nwb_paths() if p.stem == session_id_or_path)
-            except StopIteration:
-                msg = f"Could not find NWB file for {session_id_or_path!r}"
-                if not raise_on_missing:
-                    logger.error(msg)
-                    return
-                else:
-                    raise FileNotFoundError(f"{msg}. Available files: {[p.name for p in get_nwb_paths()]}") from None
-    logger.info(f"Reading {nwb_path}")
-    try:
-        nwb = pynwb.NWBHDF5IO(nwb_path).read()
-    except RecursionError:
-        msg = f"{nwb_path.name} cannot be read due to RecursionError (hdf5 may still be accessible)"
-        if not raise_on_bad_file:
-            logger.error(msg)
-            return
-        else:
-            raise RecursionError(msg)
-    else:
-        return nwb
-        
-def ensure_nonempty_results_dir() -> None:
-    # pipeline can crash if a results folder is expected and not found, and requires creating manually:
-    results = pathlib.Path("/results")
-    results.mkdir(exist_ok=True)
-    if not list(results.iterdir()):
-        (results / uuid.uuid4().hex).touch()
-
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
-
 def process_session(session_id: str, params: "Params", test: int = 0) -> None:
     """Process a single session with parameters defined in `params` and save results + params to
     /results.
@@ -161,7 +86,7 @@ def process_session(session_id: str, params: "Params", test: int = 0) -> None:
     # - the file is corrupted due to a bad write (raises a RecursionError)
     # Choose how to handle these as appropriate for your capsule
     try:
-        nwb = get_nwb(session_id, raise_on_missing=True, raise_on_bad_file=True) 
+        nwb = utils.get_nwb(session_id, raise_on_missing=True, raise_on_bad_file=True) 
     except (FileNotFoundError, RecursionError) as exc:
         logger.info(f"Skipping {session_id}: {exc!r}")
         return
@@ -176,7 +101,7 @@ def process_session(session_id: str, params: "Params", test: int = 0) -> None:
     for structure, structure_df in units_df.groupby('structure'):
         results[structure] = len(structure_df)
         if test:
-            logger.info("Test mode: exiting after first structure")
+            logger.info("TEST | Exiting after first structure")
             break
 
     # Save data to files in /results
@@ -258,16 +183,24 @@ def main():
             
     # if session_id is passed as a command line argument, we will only process that session,
     # otherwise we process all session IDs that match filtering criteria:    
-    session_table = pd.read_parquet(get_datacube_dir() / 'session_table.parquet')
+    session_table = utils.get_session_table()
     session_ids: list[str] = session_table.query(
-        "is_ephys & project=='DynamicRouting' & is_task & is_annotated & ~is_context_naive"
+        " & ".join([
+            "is_ephys",
+            "project=='DynamicRouting'",
+            "is_task",
+            "is_annotated",
+            "~is_context_naive",
+        ])
     )['session_id'].values.tolist()
+    
     if args.session_id is not None:
         if args.session_id not in session_ids:
             logger.info(f"{args.session_id!r} not in filtered sessions list")
-            exit()
-        logger.info(f"Using single session_id {args.session_id} provided via command line argument")
-        session_ids = [args.session_id]
+            session_ids = []
+        else:
+            logger.info(f"Using single session_id {args.session_id} provided via command line argument")
+            session_ids = [args.session_id]
     else:
         logger.info(f"Using list of {len(session_ids)} session_ids")
 
@@ -275,9 +208,10 @@ def main():
     for session_id in session_ids:
         process_session(session_id, params=Params(**params), test=args.test)
         if args.test:
-            logger.info("Test mode: exiting after first session")
+            logger.info("TEST | Exiting after first session")
             break
-    ensure_nonempty_results_dir()
+        
+    utils.ensure_nonempty_results_dir()
     logger.info(f"Time elapsed: {time.time() - t0:.2f} s")
 
 if __name__ == "__main__":
