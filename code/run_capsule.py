@@ -47,9 +47,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--update_packages_from_source', type=int, default=1)
     parser.add_argument('--override_params_json', type=str, default="{}")
     for field in dataclasses.fields(Params):
-        if field.name == 'decoder_type':
-            print(field)
-            print(type(field.type))
         if field.name in [getattr(action, 'dest') for action in parser._actions]:
             # already added field above
             continue
