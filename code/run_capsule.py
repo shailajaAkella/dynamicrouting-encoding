@@ -74,6 +74,13 @@ def parse_args() -> argparse.Namespace:
     logger.info(f"{args=}")
     return args
 
+def get_df(component: str, lazy: bool = False) -> pl.DataFrame:
+    path = get_datacube_dir() / 'consolidated' / f'{component}.parquet'
+    if lazy:
+        return pl.scan_parquet(path)
+    else:
+        return pl.read_parquet(path)
+
 @functools.cache
 def get_datacube_dir() -> pathlib.Path:
     for p in get_data_root().iterdir():
