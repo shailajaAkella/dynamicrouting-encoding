@@ -18,6 +18,9 @@
 		"pip3": {
 			"packages": [
 				{
+					"name": "code-ocean-aux-tools"
+				},
+				{
 					"name": "matplotlib",
 					"version": "3.9.2"
 				},
