@@ -324,7 +324,7 @@ def get_unit_responses(
 # paths ----------------------------------------------------------- #
 @functools.cache
 def get_datacube_dir() -> pathlib.Path:
-    for p in reversed(get_data_root().iterdir()): # in case we have multiple assets attached, the latest will be used
+    for p in sorted(get_data_root().iterdir(), reverse=True): # in case we have multiple assets attached, the latest will be used
         if p.is_dir() and p.name.startswith('dynamicrouting_datacube'):
             path = p
             break
