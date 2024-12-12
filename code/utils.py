@@ -16,6 +16,7 @@ import uuid
 from typing import Any, Iterable, Literal
 
 # 3rd-party imports necessary for processing ----------------------- #
+import co_tools.co_utils as co_utils
 import h5py
 import numpy as np
 import numpy.typing as npt
@@ -353,11 +354,16 @@ def get_nwb_paths() -> tuple[pathlib.Path, ...]:
     return tuple(get_data_root().rglob('*.nwb'))
 
 def ensure_nonempty_results_dir() -> None:
-    # pipeline can crash if a results folder is expected and not found, and requires creating manually:
+    """A pipeline run can crash if a results folder is expected and not found or is empty 
+    - ensure that a non-empty folder exists by creating a unique file"""
+    if not co_utils.is_pipeline():
+        return
     results = pathlib.Path("/results")
     results.mkdir(exist_ok=True)
     if not list(results.iterdir()):
-        (results / uuid.uuid4().hex).touch()
+        path = results / uuid.uuid4().hex
+        logger.info(f"Creating {path} to ensure results folder is not empty")
+        path.touch()
 
 
 if __name__ == "__main__":
