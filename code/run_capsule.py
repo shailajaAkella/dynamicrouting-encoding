@@ -26,12 +26,10 @@ import utils
 
 # logging configuration -------------------------------------------- #
 # use `logger.info(msg)` instead of `print(msg)` so we get timestamps and origin of log messages
-logging.basicConfig(
-    level=logging.INFO, 
-    format="%(asctime)s | %(levelname)s | %(name)s.%(funcName)s | %(message)s", 
-    datefmt="%Y-%d-%m %H:%M:%S",
-    )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(
+    pathlib.Path(__file__).stem if __name__.endswith("_main__") else __name__
+    # multiprocessing gives name '__mp_main__'
+)
 
 # general configuration -------------------------------------------- #
 matplotlib.rcParams['pdf.fonttype'] = 42
@@ -161,6 +159,8 @@ class Params:
 
 def main():
     t0 = time.time()
+    
+    utils.setup_logging()
 
     # get arguments passed from command line (or "AppBuilder" interface):
     args = parse_args()
