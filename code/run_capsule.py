@@ -91,7 +91,13 @@ def process_session(session_id: str, params: "Params", test: int = 0) -> None:
     
     # Get components from the nwb file:
     trials_df = nwb.trials[:]
-    units_df = nwb.units[:]
+    dprimes = np.array(nwb.performance.cross_modal_dprime[:])
+    epoch = nwb.epochs[:]
+    behavior_info = {'trials': trials,
+                        'dprime': dprimes,
+                        'is_good_behavior': np.count_nonzero(dprimes >= 1) >= 4,
+                        'epoch_info': epoch}
+    units_table = nwb.units[:]
     
     # Process data here, with test mode implemented to break out of the loop early:
     logger.info(f"Processing {session_id} with {params.to_json()}")
